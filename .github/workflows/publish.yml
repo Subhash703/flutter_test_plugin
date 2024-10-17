@@ -45,8 +45,18 @@ jobs:
       - name: Generate new version
         id: new_version
         run: |
-          # Generate a new version (increment the patch version)
+          # Split the current version into major, minor, and patch
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          echo "major : $major"
+          echo "minor : $minor"
+          echo "patch : $patch"
+          # Check if the version parts are valid
+          if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
+            echo "Invalid version format: $CURRENT_VERSION"
+            exit 1
+          fi
+
+          # Increment the patch version
           NEW_PATCH=$((patch + 1))
           NEW_VERSION="$major.$minor.$NEW_PATCH"
           echo "New version will be: $NEW_VERSION"

@@ -1,6 +1,6 @@
 name: flutter_test_plugin
 description: A basic Flutter package for testing GitHub Actions workflow.
-version: 0.0.1
+version: 1.0.1
 homepage: https://scdev.netlify.app
 repository: https://github.com/Subhash703/flutter_test_plugin
 
