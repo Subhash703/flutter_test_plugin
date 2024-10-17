@@ -3,10 +3,30 @@ name: Publish Flutter Package
 on:
   push:
     branches:
-      - main  # Only run this workflow on pushes to the main branch
+      - '**'  # Runs dry-run on any push to any branch
 
 jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    name: Flutter Pub Publish --dry-run
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.13.0'
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run flutter pub publish --dry-run
+        run: flutter pub publish --dry-run
+
   publish:
+    needs: dry-run  # This ensures publish runs only if dry-run succeeds
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' # Only run on the main branch
     runs-on: ubuntu-latest
     name: Publish Package to Pub.dev
     steps:
@@ -15,14 +35,12 @@ jobs:
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
 
       - name: Install Dependencies
         run: flutter pub get
 
       # - name: Set up Credentials
-        # run: echo "${{ secrets.PUB_DEV_TOKEN }}" > ~/.pub-cache/credentials.json
+      #   run: echo "${{ secrets.PUB_DEV_TOKEN }}" > ~/.pub-cache/credentials.json
 
       # - name: Publish to pub.dev
       #   run: flutter pub publish --force
