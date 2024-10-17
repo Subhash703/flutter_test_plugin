@@ -25,3 +25,15 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Flutter
+**/build/
+**/ios/Flutter/Flutter.framework/
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/Generated.xcodeproj/
+**/ios/Flutter/Flutter.podspec
+.pub-cache
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
