@@ -3,7 +3,9 @@ name: Publish Flutter Package
 on:
   push:
     branches:
-      - '**'  # Runs dry-run on any push to any branch
+      - main  # Corrected from 'mian' to 'main'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'  # Tag pattern for pub.dev versioning
 
 jobs:
   dry-run:
@@ -19,14 +21,45 @@ jobs:
           flutter-version: '3.13.0'
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Run flutter pub publish --dry-run
         run: flutter pub publish --dry-run
 
+  tag-version:
+    needs: dry-run
+    runs-on: ubuntu-latest
+    name: Tag New Version
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Get current version
+        id: get_version
+        run: |
+          # Get the current version from pubspec.yaml
+          CURRENT_VERSION=$(grep 'version: ' pubspec.yaml | sed 's/version: //;s/+.*//')
+          echo "Current version is: $CURRENT_VERSION"
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
+
+      - name: Generate new version
+        id: new_version
+        run: |
+          # Generate a new version (increment the patch version)
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="$major.$minor.$NEW_PATCH"
+          echo "New version will be: $NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Tag the new version
+        run: |
+          git tag "v${{ env.new_version }}"
+          git push origin "v${{ env.new_version }}"
+
   publish:
-    needs: dry-run  # This ensures publish runs only if dry-run succeeds
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' # Only run on the main branch
+    needs: tag-version  # This ensures publish runs only if tagging succeeds
+    if: github.ref == 'refs/heads/main'  # Only run on the main branch
     runs-on: ubuntu-latest
     name: Publish Package to Pub.dev
     steps:
