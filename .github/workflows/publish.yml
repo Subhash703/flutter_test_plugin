@@ -1,37 +1,13 @@
 name: Publish Flutter Package
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   push:
     branches:
-      - main
+      - main  # Only run this workflow on pushes to the main branch
 
 jobs:
-  # Dry Run Job for PRs
-  dry-run:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    name: Flutter Pub Publish --dry-run
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'stable'
-      
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Run flutter pub publish --dry-run
-        run: flutter pub publish --dry-run
-
-  # Publish Job on Merge to Main
   publish:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     name: Publish Package to Pub.dev
     steps:
       - name: Checkout Code
@@ -48,7 +24,7 @@ jobs:
       # - name: Set up Credentials
         # run: echo "${{ secrets.PUB_DEV_TOKEN }}" > ~/.pub-cache/credentials.json
 
-      - name: Publish to pub.dev
-        run: flutter pub publish --force
-        env:
-          PUB_ENVIRONMENT: github-action
+      # - name: Publish to pub.dev
+      #   run: flutter pub publish --force
+      #   env:
+      #     PUB_ENVIRONMENT: github-action
