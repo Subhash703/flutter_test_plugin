@@ -40,13 +40,14 @@ jobs:
           # Get the current version from pubspec.yaml
           CURRENT_VERSION=$(grep 'version: ' pubspec.yaml | sed 's/version: //;s/+.*//')
           echo "Current version is: $CURRENT_VERSION"
+          # Export CURRENT_VERSION as an output so it can be used in subsequent steps
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
 
       - name: Generate new version
         id: new_version
         run: |
           # Split the current version into major, minor, and patch
-          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          IFS='.' read -r major minor patch <<< "${{ env.current_version }}"
           echo "major : $major"
           echo "minor : $minor"
           echo "patch : $patch"
@@ -67,6 +68,7 @@ jobs:
           git tag "v${{ env.new_version }}"
           git push origin "v${{ env.new_version }}"
 
+
   publish:
     needs: tag-version  # This ensures publish runs only if tagging succeeds
     if: github.ref == 'refs/heads/main'  # Only run on the main branch
@@ -82,6 +84,12 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Publish to pub.dev
+        uses: k-paxian/dart-package-publisher@v1.5.1
+        with:
+          credentialJson: ${{ secrets.CREDENTIAL_JSON }}
+          flutter: true
+          skipTests: true
       # - name: Set up Credentials
       #   run: echo "${{ secrets.PUB_DEV_TOKEN }}" > ~/.pub-cache/credentials.json
 
